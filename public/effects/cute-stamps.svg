@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <g opacity="0.9">
+    <!-- ハート -->
+    <path transform="translate(100, 100) scale(0.5)" fill="#ff6b9d" d="M100,34.4c11.3-11.3,26.7-11.3,38,0s11.3,26.7,0,38l-38,38l-38-38c-11.3-11.3-11.3-26.7,0-38
+      S88.7,23.1,100,34.4z"/>
+
+    <!-- 星 -->
+    <path transform="translate(600, 150) scale(0.5)" fill="#ffdf00" d="M100,10L77.3,63.8L20,63.8L66.3,97.3L43.6,151.1L100,117.6L156.4,151.1L133.7,97.3L180,63.8L122.7,63.8L100,10Z"/>
+
+    <!-- お花 -->
+    <g transform="translate(200, 450) scale(0.4)">
+      <circle cx="100" cy="100" r="40" fill="#ff9e9e"/>
+      <circle cx="100" cy="30" r="30" fill="#ffcb9e"/>
+      <circle cx="170" cy="100" r="30" fill="#ffcb9e"/>
+      <circle cx="100" cy="170" r="30" fill="#ffcb9e"/>
+      <circle cx="30" cy="100" r="30" fill="#ffcb9e"/>
+    </g>
+
+    <!-- 虹 -->
+    <path transform="translate(500, 350) scale(0.3)" fill="none" stroke="#ff9e9e" stroke-width="20" d="M100,180 a 80,80 0 1,1 160,0"/>
+    <path transform="translate(500, 350) scale(0.25)" fill="none" stroke="#ffdb9e" stroke-width="20" d="M100,180 a 80,80 0 1,1 160,0"/>
+    <path transform="translate(500, 350) scale(0.2)" fill="none" stroke="#9effb9" stroke-width="20" d="M100,180 a 80,80 0 1,1 160,0"/>
+  </g>
+</svg>
