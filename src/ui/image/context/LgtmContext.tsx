@@ -21,8 +21,8 @@ import {
 } from '@/utils/image-processor'
 import { IMAGE_EFFECTS } from '@/utils/image-effects'
 import { ImageEffect, SizePreset } from '../types'
-import { StyleTabType } from '../StyleTabs'
 import { NotificationType } from '../../notification/Notification'
+import { StyleTabType } from '../settings/StyleTabs'
 
 // コンテキストの型定義
 type MemeContextType = {
