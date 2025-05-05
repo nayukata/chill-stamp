@@ -1,5 +1,6 @@
 {
-  "name": "lgtm-image-generator",
+  "name": "chill-stamp",
+  "author": "nayukata",
   "version": "0.1.0",
   "private": true,
   "scripts": {

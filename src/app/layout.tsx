@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Chill Stamp | かわいいLGTM画像ジェネレーター',
+  title: 'Chill Stamp | チルなLGTM画像ジェネレーター',
   description:
-    '画像にLGTMテキストを追加してシェアできる便利なジェネレーター。チルな雰囲気のオリジナルLGTM画像を簡単に作成、保存できます。',
+    '画像にLGTMなどのテキストを追加してシェアできる便利なジェネレーター。チルな雰囲気のオリジナルLGTM画像を簡単に作成、保存できます。',
   keywords:
     'LGTM, 画像ジェネレーター, Looks Good To Me, GitHub, プルリクエスト, コードレビュー, 画像加工, Chill Stamp',
   authors: [{ name: 'Chill Stamp Team' }],
@@ -25,16 +25,16 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'ja_JP',
     url: 'https://chill-stamp.vercel.app/',
-    title: 'Chill Stamp | かわいいLGTM画像ジェネレーター',
+    title: 'Chill Stamp | チルなLGTM画像ジェネレーター',
     description:
-      '画像にLGTMテキストを追加してシェアできる便利なジェネレーター。チルな雰囲気のオリジナルLGTM画像を簡単に作成、保存できます。',
+      '画像にLGTMなどのテキストを追加してシェアできる便利なジェネレーター。チルな雰囲気のオリジナルLGTM画像を簡単に作成、保存できます。',
     siteName: 'Chill Stamp',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Chill Stamp | かわいいLGTM画像ジェネレーター',
+    title: 'Chill Stamp | チルなLGTM画像ジェネレーター',
     description:
-      '画像にLGTMテキストを追加してシェアできる便利なジェネレーター。チルな雰囲気のオリジナルLGTM画像を簡単に作成、保存できます。',
+      '画像にLGTMなどのテキストを追加してシェアできる便利なジェネレーター。チルな雰囲気のオリジナルLGTM画像を簡単に作成、保存できます。',
     creator: '@chill_stamp',
   },
   viewport: {
