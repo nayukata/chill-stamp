@@ -368,6 +368,122 @@ export const copyCanvasToClipboard = async (
 }
 
 /**
+ * エフェクトをキャンバスに適用する
+ *
+ * @param canvas - Canvas要素
+ * @param effect - 適用するエフェクト
+ * @param imageFilter - 適用する画像フィルター
+ * @returns エフェクトが適用されたCanvas要素を含むPromise
+ */
+export const applyEffectsToCanvas = async (
+  canvas: HTMLCanvasElement,
+  effect: {
+    borderStyle?: string;
+    cornerStyle?: string;
+    overlayUrl?: string;
+  },
+  imageFilter: ImageFilterType = 'none'
+): Promise<HTMLCanvasElement> => {
+  const filteredCanvas = document.createElement('canvas');
+  filteredCanvas.width = canvas.width;
+  filteredCanvas.height = canvas.height;
+  const filteredCtx = filteredCanvas.getContext('2d');
+  
+  if (!filteredCtx) {
+    throw new Error('Failed to get canvas context');
+  }
+  
+  filteredCtx.drawImage(canvas, 0, 0);
+  
+  // フィルターを適用
+  if (imageFilter !== 'none') {
+    applyImageFilter(filteredCtx, imageFilter, filteredCanvas.width, filteredCanvas.height);
+  }
+  
+  const newCanvas = document.createElement('canvas');
+  const ctx = newCanvas.getContext('2d');
+  if (!ctx) {
+    throw new Error('Failed to get canvas context');
+  }
+
+  let borderSize = 0;
+  if (effect.borderStyle) {
+    const borderMatch = effect.borderStyle.match(/(\d+)px/);
+    if (borderMatch && borderMatch[1]) {
+      borderSize = parseInt(borderMatch[1], 10);
+    }
+  }
+
+  newCanvas.width = filteredCanvas.width + borderSize * 2;
+  newCanvas.height = filteredCanvas.height + borderSize * 2;
+
+  if (effect.borderStyle) {
+    let borderColor = 'white';
+    if (effect.borderStyle.includes('white')) {
+      borderColor = 'white';
+    } else if (effect.borderStyle.includes('transparent')) {
+      borderColor = 'transparent';
+    }
+    
+    ctx.fillStyle = borderColor;
+    ctx.fillRect(0, 0, newCanvas.width, newCanvas.height);
+  }
+
+  if (effect.cornerStyle && effect.cornerStyle.includes('drop-shadow')) {
+    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetX = 5;
+    ctx.shadowOffsetY = 5;
+  }
+
+  ctx.drawImage(
+    filteredCanvas,
+    0,
+    0,
+    filteredCanvas.width,
+    filteredCanvas.height,
+    borderSize,
+    borderSize,
+    filteredCanvas.width,
+    filteredCanvas.height
+  );
+  
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
+
+  if (effect.overlayUrl) {
+    try {
+      const img = new Image();
+      const overlayUrl = effect.overlayUrl;
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Failed to load overlay image'));
+        img.src = overlayUrl;
+      });
+
+      ctx.globalCompositeOperation = 'overlay';
+      ctx.globalAlpha = 0.85; // opacity: 0.85に相当
+      ctx.drawImage(
+        img,
+        borderSize,
+        borderSize,
+        filteredCanvas.width,
+        filteredCanvas.height
+      );
+      
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1.0;
+    } catch (error) {
+      console.error('Failed to apply overlay effect:', error);
+    }
+  }
+
+  return newCanvas;
+};
+
+/**
  * ファイルからデータURLを読み込む
  *
  * @param file - 読み込むファイル
@@ -400,7 +516,7 @@ export const readFileAsDataURL = (file: File): Promise<string> => {
  * @returns 画像ファイルまたはnull
  */
 export const getImageFileFromDropEvent = (
-  event: React.DragEvent
+  event: { preventDefault: () => void; dataTransfer: { files: FileList } }
 ): File | null => {
   event.preventDefault()
 
