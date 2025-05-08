@@ -172,7 +172,7 @@ function MemeImageGenerator({ className }: MemeImageGeneratorProps) {
     if (!canvasRef.current) return
 
     try {
-      const effectCanvas = await applyEffectsToCanvas(canvasRef.current, selectedEffect);
+      const effectCanvas = await applyEffectsToCanvas(canvasRef.current, selectedEffect, imageFilter);
       const dataUrl = canvasToDataUrl(effectCanvas)
       downloadImageUtil(dataUrl, `Meme-${new Date().getTime()}.png`)
       showNotification('success', '画像をダウンロードしました')
@@ -180,14 +180,14 @@ function MemeImageGenerator({ className }: MemeImageGeneratorProps) {
       console.error('Failed to download image:', error)
       showNotification('error', 'ダウンロードに失敗しました')
     }
-  }, [showNotification, selectedEffect])
+  }, [showNotification, selectedEffect, imageFilter])
 
   // クリップボードにコピーする関数
   const copyToClipboard = useCallback(async () => {
     if (!canvasRef.current) return
 
     try {
-      const effectCanvas = await applyEffectsToCanvas(canvasRef.current, selectedEffect);
+      const effectCanvas = await applyEffectsToCanvas(canvasRef.current, selectedEffect, imageFilter);
       const success = await copyCanvasToClipboard(effectCanvas)
       if (success) {
         showNotification('success', 'クリップボードにコピーしました')
@@ -198,7 +198,7 @@ function MemeImageGenerator({ className }: MemeImageGeneratorProps) {
       console.error('Failed to copy to clipboard:', error)
       showNotification('error', 'コピーに失敗しました')
     }
-  }, [showNotification, selectedEffect])
+  }, [showNotification, selectedEffect, imageFilter])
 
   return (
     <div className={cn('w-full max-w-4xl mx-auto p-4', className)}>

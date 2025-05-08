@@ -372,6 +372,7 @@ export const copyCanvasToClipboard = async (
  *
  * @param canvas - Canvas要素
  * @param effect - 適用するエフェクト
+ * @param imageFilter - 適用する画像フィルター
  * @returns エフェクトが適用されたCanvas要素を含むPromise
  */
 export const applyEffectsToCanvas = async (
@@ -380,8 +381,25 @@ export const applyEffectsToCanvas = async (
     borderStyle?: string;
     cornerStyle?: string;
     overlayUrl?: string;
-  }
+  },
+  imageFilter: ImageFilterType = 'none'
 ): Promise<HTMLCanvasElement> => {
+  const filteredCanvas = document.createElement('canvas');
+  filteredCanvas.width = canvas.width;
+  filteredCanvas.height = canvas.height;
+  const filteredCtx = filteredCanvas.getContext('2d');
+  
+  if (!filteredCtx) {
+    throw new Error('Failed to get canvas context');
+  }
+  
+  filteredCtx.drawImage(canvas, 0, 0);
+  
+  // フィルターを適用
+  if (imageFilter !== 'none') {
+    applyImageFilter(filteredCtx, imageFilter, filteredCanvas.width, filteredCanvas.height);
+  }
+  
   const newCanvas = document.createElement('canvas');
   const ctx = newCanvas.getContext('2d');
   if (!ctx) {
@@ -396,9 +414,8 @@ export const applyEffectsToCanvas = async (
     }
   }
 
-  const padding = borderSize * 2;
-  newCanvas.width = canvas.width + padding;
-  newCanvas.height = canvas.height + padding;
+  newCanvas.width = filteredCanvas.width + borderSize * 2;
+  newCanvas.height = filteredCanvas.height + borderSize * 2;
 
   if (effect.borderStyle) {
     let borderColor = 'white';
@@ -412,39 +429,34 @@ export const applyEffectsToCanvas = async (
     ctx.fillRect(0, 0, newCanvas.width, newCanvas.height);
   }
 
-  ctx.drawImage(
-    canvas,
-    0,
-    0,
-    canvas.width,
-    canvas.height,
-    borderSize,
-    borderSize,
-    canvas.width,
-    canvas.height
-  );
-
-  if (effect.cornerStyle) {
-    if (effect.cornerStyle.includes('drop-shadow')) {
-      ctx.shadowColor = 'rgba(0,0,0,0.3)';
-      ctx.shadowBlur = 10;
-      ctx.shadowOffsetX = 5;
-      ctx.shadowOffsetY = 5;
-      
-      ctx.fillStyle = 'rgba(0,0,0,0)';
-      ctx.fillRect(borderSize, borderSize, canvas.width, canvas.height);
-      
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
-    }
+  if (effect.cornerStyle && effect.cornerStyle.includes('drop-shadow')) {
+    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetX = 5;
+    ctx.shadowOffsetY = 5;
   }
+
+  ctx.drawImage(
+    filteredCanvas,
+    0,
+    0,
+    filteredCanvas.width,
+    filteredCanvas.height,
+    borderSize,
+    borderSize,
+    filteredCanvas.width,
+    filteredCanvas.height
+  );
+  
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
 
   if (effect.overlayUrl) {
     try {
       const img = new Image();
-      const overlayUrl = effect.overlayUrl; // TypeScriptエラー回避のため変数に代入
+      const overlayUrl = effect.overlayUrl;
       await new Promise<void>((resolve, reject) => {
         img.onload = () => resolve();
         img.onerror = () => reject(new Error('Failed to load overlay image'));
@@ -457,8 +469,8 @@ export const applyEffectsToCanvas = async (
         img,
         borderSize,
         borderSize,
-        canvas.width,
-        canvas.height
+        filteredCanvas.width,
+        filteredCanvas.height
       );
       
       ctx.globalCompositeOperation = 'source-over';
