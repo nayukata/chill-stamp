@@ -7,6 +7,7 @@ import {
   copyCanvasToClipboard,
   downloadImage as downloadImageUtil,
   renderLgtmCanvas,
+  applyEffectsToCanvas,
 } from '@/utils/image-processor'
 
 import { ActionButtons } from './ActionButtons'
@@ -73,6 +74,7 @@ function MemeImageGenerator({ className }: MemeImageGeneratorProps) {
     preserveAspectRatio,
     textPosition,
     imageFilter,
+    selectedEffect,
     handleDragEnter,
     handleDragOver,
     handleDragLeave,
@@ -166,25 +168,27 @@ function MemeImageGenerator({ className }: MemeImageGeneratorProps) {
   }, [renderCanvas])
 
   // 画像のダウンロード関数
-  const downloadImage = useCallback(() => {
+  const downloadImage = useCallback(async () => {
     if (!canvasRef.current) return
 
     try {
-      const dataUrl = canvasToDataUrl(canvasRef.current)
+      const effectCanvas = await applyEffectsToCanvas(canvasRef.current, selectedEffect);
+      const dataUrl = canvasToDataUrl(effectCanvas)
       downloadImageUtil(dataUrl, `Meme-${new Date().getTime()}.png`)
       showNotification('success', '画像をダウンロードしました')
     } catch (error) {
       console.error('Failed to download image:', error)
       showNotification('error', 'ダウンロードに失敗しました')
     }
-  }, [showNotification])
+  }, [showNotification, selectedEffect])
 
   // クリップボードにコピーする関数
   const copyToClipboard = useCallback(async () => {
     if (!canvasRef.current) return
 
     try {
-      const success = await copyCanvasToClipboard(canvasRef.current)
+      const effectCanvas = await applyEffectsToCanvas(canvasRef.current, selectedEffect);
+      const success = await copyCanvasToClipboard(effectCanvas)
       if (success) {
         showNotification('success', 'クリップボードにコピーしました')
       } else {
@@ -194,7 +198,7 @@ function MemeImageGenerator({ className }: MemeImageGeneratorProps) {
       console.error('Failed to copy to clipboard:', error)
       showNotification('error', 'コピーに失敗しました')
     }
-  }, [showNotification])
+  }, [showNotification, selectedEffect])
 
   return (
     <div className={cn('w-full max-w-4xl mx-auto p-4', className)}>

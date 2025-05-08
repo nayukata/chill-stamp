@@ -368,6 +368,110 @@ export const copyCanvasToClipboard = async (
 }
 
 /**
+ * エフェクトをキャンバスに適用する
+ *
+ * @param canvas - Canvas要素
+ * @param effect - 適用するエフェクト
+ * @returns エフェクトが適用されたCanvas要素を含むPromise
+ */
+export const applyEffectsToCanvas = async (
+  canvas: HTMLCanvasElement,
+  effect: {
+    borderStyle?: string;
+    cornerStyle?: string;
+    overlayUrl?: string;
+  }
+): Promise<HTMLCanvasElement> => {
+  const newCanvas = document.createElement('canvas');
+  const ctx = newCanvas.getContext('2d');
+  if (!ctx) {
+    throw new Error('Failed to get canvas context');
+  }
+
+  let borderSize = 0;
+  if (effect.borderStyle) {
+    const borderMatch = effect.borderStyle.match(/(\d+)px/);
+    if (borderMatch && borderMatch[1]) {
+      borderSize = parseInt(borderMatch[1], 10);
+    }
+  }
+
+  const padding = borderSize * 2;
+  newCanvas.width = canvas.width + padding;
+  newCanvas.height = canvas.height + padding;
+
+  if (effect.borderStyle) {
+    let borderColor = 'white';
+    if (effect.borderStyle.includes('white')) {
+      borderColor = 'white';
+    } else if (effect.borderStyle.includes('transparent')) {
+      borderColor = 'transparent';
+    }
+    
+    ctx.fillStyle = borderColor;
+    ctx.fillRect(0, 0, newCanvas.width, newCanvas.height);
+  }
+
+  ctx.drawImage(
+    canvas,
+    0,
+    0,
+    canvas.width,
+    canvas.height,
+    borderSize,
+    borderSize,
+    canvas.width,
+    canvas.height
+  );
+
+  if (effect.cornerStyle) {
+    if (effect.cornerStyle.includes('drop-shadow')) {
+      ctx.shadowColor = 'rgba(0,0,0,0.3)';
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetX = 5;
+      ctx.shadowOffsetY = 5;
+      
+      ctx.fillStyle = 'rgba(0,0,0,0)';
+      ctx.fillRect(borderSize, borderSize, canvas.width, canvas.height);
+      
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+    }
+  }
+
+  if (effect.overlayUrl) {
+    try {
+      const img = new Image();
+      const overlayUrl = effect.overlayUrl; // TypeScriptエラー回避のため変数に代入
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Failed to load overlay image'));
+        img.src = overlayUrl;
+      });
+
+      ctx.globalCompositeOperation = 'overlay';
+      ctx.globalAlpha = 0.85; // opacity: 0.85に相当
+      ctx.drawImage(
+        img,
+        borderSize,
+        borderSize,
+        canvas.width,
+        canvas.height
+      );
+      
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1.0;
+    } catch (error) {
+      console.error('Failed to apply overlay effect:', error);
+    }
+  }
+
+  return newCanvas;
+};
+
+/**
  * ファイルからデータURLを読み込む
  *
  * @param file - 読み込むファイル
@@ -400,7 +504,7 @@ export const readFileAsDataURL = (file: File): Promise<string> => {
  * @returns 画像ファイルまたはnull
  */
 export const getImageFileFromDropEvent = (
-  event: React.DragEvent
+  event: { preventDefault: () => void; dataTransfer: { files: FileList } }
 ): File | null => {
   event.preventDefault()
 
