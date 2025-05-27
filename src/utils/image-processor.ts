@@ -378,110 +378,228 @@ export const copyCanvasToClipboard = async (
 export const applyEffectsToCanvas = async (
   canvas: HTMLCanvasElement,
   effect: {
-    borderStyle?: string;
-    cornerStyle?: string;
-    overlayUrl?: string;
+    borderStyle?: string
+    cornerStyle?: string
+    overlayUrl?: string
+    id?: string // エフェクトIDを追加
   },
   imageFilter: ImageFilterType = 'none'
 ): Promise<HTMLCanvasElement> => {
-  const filteredCanvas = document.createElement('canvas');
-  filteredCanvas.width = canvas.width;
-  filteredCanvas.height = canvas.height;
-  const filteredCtx = filteredCanvas.getContext('2d');
-  
+  // 元のキャンバスからフィルター適用済みのキャンバスを作成
+  const filteredCanvas = document.createElement('canvas')
+  filteredCanvas.width = canvas.width
+  filteredCanvas.height = canvas.height
+  const filteredCtx = filteredCanvas.getContext('2d')
+
   if (!filteredCtx) {
-    throw new Error('Failed to get canvas context');
+    throw new Error('Failed to get canvas context')
   }
-  
-  filteredCtx.drawImage(canvas, 0, 0);
-  
-  // フィルターを適用
+
+  // 元の画像を描画
+  filteredCtx.drawImage(canvas, 0, 0)
+
+  // フィルターを適用（'none'以外の場合）
   if (imageFilter !== 'none') {
-    applyImageFilter(filteredCtx, imageFilter, filteredCanvas.width, filteredCanvas.height);
+    applyImageFilter(
+      filteredCtx,
+      imageFilter,
+      filteredCanvas.width,
+      filteredCanvas.height
+    )
   }
-  
-  const newCanvas = document.createElement('canvas');
-  const ctx = newCanvas.getContext('2d');
+
+  // 効果がなければフィルターのみ適用したキャンバスを返す
+  if (
+    effect.id === 'none' ||
+    (!effect.borderStyle && !effect.cornerStyle && !effect.overlayUrl)
+  ) {
+    return filteredCanvas
+  }
+
+  // エフェクト適用用の新しいキャンバスを作成
+  const newCanvas = document.createElement('canvas')
+  const ctx = newCanvas.getContext('2d')
   if (!ctx) {
-    throw new Error('Failed to get canvas context');
+    throw new Error('Failed to get canvas context')
   }
 
-  let borderSize = 0;
+  // ボーダーサイズを解析（デフォルトは0）
+  let borderSize = 0
   if (effect.borderStyle) {
-    const borderMatch = effect.borderStyle.match(/(\d+)px/);
+    const borderMatch = effect.borderStyle.match(/(\d+)px/)
     if (borderMatch && borderMatch[1]) {
-      borderSize = parseInt(borderMatch[1], 10);
+      borderSize = parseInt(borderMatch[1], 10)
     }
   }
 
-  newCanvas.width = filteredCanvas.width + borderSize * 2;
-  newCanvas.height = filteredCanvas.height + borderSize * 2;
+  // キャンバスサイズをボーダーを含めたサイズに設定
+  newCanvas.width = filteredCanvas.width + borderSize * 2
+  newCanvas.height = filteredCanvas.height + borderSize * 2
 
+  // ボーダーがあれば描画
   if (effect.borderStyle) {
-    let borderColor = 'white';
+    let borderColor = 'white'
     if (effect.borderStyle.includes('white')) {
-      borderColor = 'white';
+      borderColor = 'white'
     } else if (effect.borderStyle.includes('transparent')) {
-      borderColor = 'transparent';
+      borderColor = 'transparent'
     }
-    
-    ctx.fillStyle = borderColor;
-    ctx.fillRect(0, 0, newCanvas.width, newCanvas.height);
+
+    // ボーダーカラーで全体を塗りつぶし
+    ctx.fillStyle = borderColor
+    ctx.fillRect(0, 0, newCanvas.width, newCanvas.height)
   }
 
-  if (effect.cornerStyle && effect.cornerStyle.includes('drop-shadow')) {
-    ctx.shadowColor = 'rgba(0,0,0,0.3)';
-    ctx.shadowBlur = 10;
-    ctx.shadowOffsetX = 5;
-    ctx.shadowOffsetY = 5;
+  // フィルター適用済みの画像を新しいキャンバスの中央に描画
+  // ネオンエフェクトの場合は特別な処理
+  if (effect.id === 'neon') {
+    // ネオンエフェクトは複数のglowエフェクトを重ね合わせて作成
+
+    // 1回目: ピンクのアウターglow
+    ctx.shadowColor = '#ff00ff'
+    ctx.shadowBlur = 20
+    ctx.shadowOffsetX = 0
+    ctx.shadowOffsetY = 0
+
+    ctx.drawImage(
+      filteredCanvas,
+      0,
+      0,
+      filteredCanvas.width,
+      filteredCanvas.height,
+      borderSize,
+      borderSize,
+      filteredCanvas.width,
+      filteredCanvas.height
+    )
+
+    // 2回目: ブルーのインナーglow
+    ctx.shadowColor = '#0077ff'
+    ctx.shadowBlur = 15
+    ctx.shadowOffsetX = 0
+    ctx.shadowOffsetY = 0
+
+    ctx.drawImage(
+      filteredCanvas,
+      0,
+      0,
+      filteredCanvas.width,
+      filteredCanvas.height,
+      borderSize,
+      borderSize,
+      filteredCanvas.width,
+      filteredCanvas.height
+    )
+  } else {
+    // 通常のドロップシャドウ効果を設定
+    if (effect.cornerStyle && effect.cornerStyle.includes('drop-shadow')) {
+      ctx.shadowColor = 'rgba(0,0,0,0.3)'
+      ctx.shadowBlur = 10
+      ctx.shadowOffsetX = 5
+      ctx.shadowOffsetY = 5
+    }
+
+    // 画像を描画
+    ctx.drawImage(
+      filteredCanvas,
+      0,
+      0,
+      filteredCanvas.width,
+      filteredCanvas.height,
+      borderSize,
+      borderSize,
+      filteredCanvas.width,
+      filteredCanvas.height
+    )
   }
 
-  ctx.drawImage(
-    filteredCanvas,
-    0,
-    0,
-    filteredCanvas.width,
-    filteredCanvas.height,
-    borderSize,
-    borderSize,
-    filteredCanvas.width,
-    filteredCanvas.height
-  );
-  
-  ctx.shadowColor = 'transparent';
-  ctx.shadowBlur = 0;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 0;
+  // シャドウ設定をリセット
+  ctx.shadowColor = 'transparent'
+  ctx.shadowBlur = 0
+  ctx.shadowOffsetX = 0
+  ctx.shadowOffsetY = 0
 
+  // オーバーレイ画像がある場合は適用
   if (effect.overlayUrl) {
     try {
-      const img = new Image();
-      const overlayUrl = effect.overlayUrl;
-      await new Promise<void>((resolve, reject) => {
-        img.onload = () => resolve();
-        img.onerror = () => reject(new Error('Failed to load overlay image'));
-        img.src = overlayUrl;
-      });
+      const img = new Image()
 
-      ctx.globalCompositeOperation = 'overlay';
-      ctx.globalAlpha = 0.85; // opacity: 0.85に相当
+      // CORS問題を回避するために適切なURLを構築
+      let overlayUrl = effect.overlayUrl
+      if (!overlayUrl.startsWith('http') && !overlayUrl.startsWith('data:')) {
+        // 相対パスの場合、現在のoriginと結合
+        overlayUrl = `${window.location.origin}${
+          overlayUrl.startsWith('/') ? '' : '/'
+        }${overlayUrl}`
+      }
+
+      // CrossOrigin設定を追加
+      img.crossOrigin = 'anonymous'
+
+      // 画像の読み込みを待機
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => {
+          resolve()
+        }
+        img.onerror = (error) => {
+          reject(new Error(`Failed to load overlay image: ${overlayUrl}`))
+        }
+
+        // SVGファイルの場合、Data URLに変換
+        if (overlayUrl.endsWith('.svg')) {
+          fetch(overlayUrl)
+            .then((response) => response.text())
+            .then((svgText) => {
+              const blob = new Blob([svgText], { type: 'image/svg+xml' })
+              const dataUrl = URL.createObjectURL(blob)
+              img.src = dataUrl
+            })
+            .catch(reject)
+        } else {
+          img.src = overlayUrl
+        }
+      })
+
+      // エフェクトの種類に基づいて適切なブレンドモードを選択
+      let blendMode: GlobalCompositeOperation = 'source-over' // デフォルトは通常の重ね合わせ
+      let opacity = 0.7 // デフォルトの透明度
+
+      // エフェクトの種類によってブレンドモードを調整
+      if (overlayUrl.includes('vaporwave')) {
+        blendMode = 'overlay' // オーバーレイブレンドで色を混合
+        opacity = 0.6
+      } else if (overlayUrl.includes('grunge')) {
+        blendMode = 'multiply' // 暗い部分が強調されるブレンド
+        opacity = 0.5
+      } else if (overlayUrl.includes('cute')) {
+        blendMode = 'source-over' // 標準のオーバーレイ
+        opacity = 0.8
+      }
+
+      // 選択したブレンドモードを適用
+      ctx.globalCompositeOperation = blendMode
+      ctx.globalAlpha = opacity
+
+      // オーバーレイ画像を描画
       ctx.drawImage(
         img,
         borderSize,
         borderSize,
         filteredCanvas.width,
         filteredCanvas.height
-      );
-      
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.globalAlpha = 1.0;
+      )
+
+      // 設定を元に戻す
+      ctx.globalCompositeOperation = 'source-over'
+      ctx.globalAlpha = 1.0
     } catch (error) {
-      console.error('Failed to apply overlay effect:', error);
+      console.error('Failed to apply overlay effect:', error)
+      // エラーが発生してもエフェクト適用を続行
     }
   }
 
-  return newCanvas;
-};
+  return newCanvas
+}
 
 /**
  * ファイルからデータURLを読み込む
@@ -515,9 +633,10 @@ export const readFileAsDataURL = (file: File): Promise<string> => {
  * @param event - ドロップイベント
  * @returns 画像ファイルまたはnull
  */
-export const getImageFileFromDropEvent = (
-  event: { preventDefault: () => void; dataTransfer: { files: FileList } }
-): File | null => {
+export const getImageFileFromDropEvent = (event: {
+  preventDefault: () => void
+  dataTransfer: { files: FileList }
+}): File | null => {
   event.preventDefault()
 
   // ドロップされたファイルを取得

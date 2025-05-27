@@ -136,6 +136,8 @@ function MemeImageGenerator({ className }: MemeImageGeneratorProps) {
 
     try {
       const size = isCustomSize ? customSize : outputSize
+
+      // まず基本の画像とテキストを描画
       await renderLgtmCanvas(
         canvasRef.current,
         imageUrl,
@@ -146,6 +148,28 @@ function MemeImageGenerator({ className }: MemeImageGeneratorProps) {
         textPosition,
         imageFilter
       )
+
+      // エフェクトを適用（プレビューでもエフェクトを表示）
+      if (selectedEffect && selectedEffect.id !== 'none') {
+        const effectToApply = {
+          ...selectedEffect,
+          id: selectedEffect.id,
+        }
+
+        const effectCanvas = await applyEffectsToCanvas(
+          canvasRef.current,
+          effectToApply,
+          imageFilter
+        )
+
+        // エフェクト適用後のキャンバス内容を元のキャンバスにコピー
+        const ctx = canvasRef.current.getContext('2d')
+        if (ctx) {
+          canvasRef.current.width = effectCanvas.width
+          canvasRef.current.height = effectCanvas.height
+          ctx.drawImage(effectCanvas, 0, 0)
+        }
+      }
     } catch (error) {
       console.error('Failed to render canvas:', error)
       showNotification('error', 'キャンバスの描画に失敗しました')
@@ -159,6 +183,7 @@ function MemeImageGenerator({ className }: MemeImageGeneratorProps) {
     preserveAspectRatio,
     textPosition,
     imageFilter,
+    selectedEffect,
     showNotification,
   ])
 
@@ -172,7 +197,22 @@ function MemeImageGenerator({ className }: MemeImageGeneratorProps) {
     if (!canvasRef.current) return
 
     try {
-      const effectCanvas = await applyEffectsToCanvas(canvasRef.current, selectedEffect, imageFilter);
+      // まず、現在のキャンバスにフィルターとスタイル適用済みの状態を確保
+      await renderCanvas()
+
+      console.log('ダウンロード前のエフェクト:', selectedEffect)
+
+      // その後、エフェクトを適用（エフェクトのidを確実に含める）
+      const effectToApply = {
+        ...selectedEffect,
+        id: selectedEffect.id, // IDを明示的に含める
+      }
+
+      const effectCanvas = await applyEffectsToCanvas(
+        canvasRef.current,
+        effectToApply,
+        imageFilter
+      )
       const dataUrl = canvasToDataUrl(effectCanvas)
       downloadImageUtil(dataUrl, `Meme-${new Date().getTime()}.png`)
       showNotification('success', '画像をダウンロードしました')
@@ -180,14 +220,29 @@ function MemeImageGenerator({ className }: MemeImageGeneratorProps) {
       console.error('Failed to download image:', error)
       showNotification('error', 'ダウンロードに失敗しました')
     }
-  }, [showNotification, selectedEffect, imageFilter])
+  }, [renderCanvas, showNotification, selectedEffect, imageFilter])
 
   // クリップボードにコピーする関数
   const copyToClipboard = useCallback(async () => {
     if (!canvasRef.current) return
 
     try {
-      const effectCanvas = await applyEffectsToCanvas(canvasRef.current, selectedEffect, imageFilter);
+      // まず、現在のキャンバスにフィルターとスタイル適用済みの状態を確保
+      await renderCanvas()
+
+      console.log('コピー前のエフェクト:', selectedEffect)
+
+      // その後、エフェクトを適用（エフェクトのidを確実に含める）
+      const effectToApply = {
+        ...selectedEffect,
+        id: selectedEffect.id, // IDを明示的に含める
+      }
+
+      const effectCanvas = await applyEffectsToCanvas(
+        canvasRef.current,
+        effectToApply,
+        imageFilter
+      )
       const success = await copyCanvasToClipboard(effectCanvas)
       if (success) {
         showNotification('success', 'クリップボードにコピーしました')
@@ -198,7 +253,7 @@ function MemeImageGenerator({ className }: MemeImageGeneratorProps) {
       console.error('Failed to copy to clipboard:', error)
       showNotification('error', 'コピーに失敗しました')
     }
-  }, [showNotification, selectedEffect, imageFilter])
+  }, [renderCanvas, showNotification, selectedEffect, imageFilter])
 
   return (
     <div className={cn('w-full max-w-4xl mx-auto p-4', className)}>
