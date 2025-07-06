@@ -177,7 +177,7 @@ export function TextStyleTab() {
           <label className="block text-xs font-medium text-gray-200 mb-1">
             フォント色
           </label>
-          <div className="hover:scale-110 transition duration-200">
+          <div className="hover:opacity-80 transition duration-200">
             <input
               type="color"
               value={styles.fontColor}
@@ -185,26 +185,6 @@ export function TextStyleTab() {
               className="w-8 h-8 p-1 bg-transparent border-0 rounded-md cursor-pointer"
             />
           </div>
-        </div>
-
-        {/* フォントファミリー */}
-        <div>
-          <label className="block text-xs font-medium text-gray-200 mb-1">
-            フォント
-          </label>
-          <select
-            value={styles.fontFamily}
-            onChange={(e) => updateStyle('fontFamily', e.target.value)}
-            className="w-full px-2 py-1 bg-white/10 border border-white/20 rounded-md text-white appearance-none cursor-pointer text-xs"
-            style={{ fontFamily: styles.fontFamily }}
-          >
-            <option value="'Comic Sans MS', cursive">Comic Sans</option>
-            <option value="'Tegaki', sans-serif">手書き</option>
-            <option value="Impact, sans-serif">Impact</option>
-            <option value="Arial, sans-serif">Arial</option>
-            <option value="'Courier New', monospace">Courier</option>
-            <option value="Georgia, serif">Georgia</option>
-          </select>
         </div>
       </div>
 
@@ -229,7 +209,7 @@ export function TextStyleTab() {
               type="color"
               value={styles.shadowColor}
               onChange={(e) => updateStyle('shadowColor', e.target.value)}
-              className="w-6 h-6 p-0.5 bg-transparent border-0 rounded-md cursor-pointer"
+              className="w-6 h-6 p-0.5 bg-transparent border-0 rounded-md cursor-pointer hover:opacity-80 transition duration-200"
             />
           </div>
         )}

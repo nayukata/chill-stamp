@@ -18,7 +18,7 @@ export type LgtmTheme = {
 export const lgtmThemes = {
   vintagePop: {
     text: 'L G T M',
-    fontFamily: "'Comic Sans MS', cursive",
+    fontFamily: "'Tegaki', cursive",
     fontSize: 80,
     fontWeight: 900,
     fontColor: '#FF9FEF',
@@ -27,7 +27,7 @@ export const lgtmThemes = {
   },
   chillBlue: {
     text: 'L G T M',
-    fontFamily: "'Comic Sans MS', cursive",
+    fontFamily: "'Tegaki', cursive",
     fontSize: 72,
     fontWeight: 700,
     fontColor: '#6ECBF5',
@@ -36,7 +36,7 @@ export const lgtmThemes = {
   },
   mintChill: {
     text: 'L G T M',
-    fontFamily: "'Comic Sans MS', cursive",
+    fontFamily: "'Tegaki', cursive",
     fontSize: 68,
     fontWeight: 700,
     fontColor: '#98FB98',
