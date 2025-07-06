@@ -20,14 +20,9 @@ export default function Home() {
         <h1 className="text-5xl md:text-6xl font-bold font-['Comic_Sans_MS',_cursive] bg-gradient-to-r from-pink-400 via-purple-500 to-blue-500 text-transparent bg-clip-text animate-scaleIn">
           Chill Stamp
         </h1>
-        <p className="mt-4 text-gray-200 max-w-md mx-auto text-lg animate-fadeInDelay">
-          ✨ 画像にテキストを簡単に追加できます ✨
+        <p className="mt-4 text-gray-200 max-w-md mx-auto text-xl animate-fadeInDelay font-['Tegaki','Comic_Sans_MS',_sans-serif]">
+          画像にテキストを簡単に追加できます 🏄
         </p>
-        <div className="flex justify-center mt-3 space-x-2 animate-fadeInLongDelay">
-          <span className="text-pink-300">🏄</span>
-          <span className="text-purple-300">🌿</span>
-          <span className="text-blue-300">💜</span>
-        </div>
       </header>
 
       {/* メインコンテンツ */}
